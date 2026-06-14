@@ -79,13 +79,12 @@
             Юлик, скоро ты трахнешь свою сучку 🍌🍓💞✨
         </div>
 
+        <!-- Кнопка "Начать фарм" видна всем, но запустить сможет только Юлик -->
         <button id="startBtn" class="w-full bg-pink-500 text-white py-3 rounded-xl hover:bg-pink-600 transition mb-4 font-bold shadow-lg shadow-pink-200 hidden">НАЧАТЬ ФАРМ 🚀</button>
 
-        <!-- Кнопка авторизации для тебя -->
-        <button id="loginBtn" class="w-full bg-gradient-to-r from-red-400 to-pink-500 text-white py-2 rounded-xl hover:opacity-90 transition mb-4 font-bold shadow-md hidden">Пришёл Юлик 😎</button>
-
-        <div id="adminPanel" class="mt-2 border-t border-pink-100 pt-3 hidden">
-            <label class="block text-xs font-bold mb-1.5">Добавить сбережения:</label>
+        <!-- Админка видна всем гостям для красоты -->
+        <div id="adminPanel" class="mt-2 border-t border-pink-100 pt-3">
+            <label class="block text-xs font-bold mb-1.5">Добавить свои сбережения:</label>
             <div class="flex gap-2 mb-3">
                 <div class="w-20">
                     <span class="text-[9px] uppercase tracking-wider text-pink-400 font-bold block mb-1">Курс ₴/$</span>
@@ -105,6 +104,9 @@
             </div>
             <button id="addSavingsBtn" class="w-full bg-pink-400 text-white py-2 rounded-xl hover:bg-pink-500 transition text-sm font-bold shadow-md">Добавить вклад 💖</button>
         </div>
+
+        <!-- Уведомление об авторизации / статусе внизу -->
+        <div id="authStatusText" class="text-[10px] text-pink-500/75 mt-2 font-bold transition-all duration-300"></div>
 
         <div class="text-[11px] text-pink-400 mt-2 font-semibold">
             Твои личные вклады: <span id="manualTotalUsd">0.00</span> $ (<span id="manualTotalUah">0.00</span> ₴)
@@ -140,9 +142,9 @@
 
         const rateInput = document.getElementById('rateInput');
         const startBtn = document.getElementById('startBtn');
-        const loginBtn = document.getElementById('loginBtn');
         const adminPanel = document.getElementById('adminPanel');
         const addSavingsBtn = document.getElementById('addSavingsBtn');
+        const authStatusText = document.getElementById('authStatusText');
         const mainDocRef = doc(db, "data", "main");
 
         const bgMusic = document.getElementById('bgMusic');
@@ -150,30 +152,44 @@
         const musicIcon = document.getElementById('musicIcon');
         let musicStarted = false;
 
-        // Отслеживаем авторизацию пользователя
+        // Показываем статус авторизации тихонько внизу
         onAuthStateChanged(auth, (user) => {
             if (user && user.email === "ulikloctar@gmail.com") {
-                // Если зашел ты - показываем панель управления и прячем кнопку входа
-                adminPanel.classList.remove('hidden');
-                loginBtn.classList.add('hidden');
-                if (!startDate) startBtn.classList.remove('hidden');
+                authStatusText.innerText = "Привет, Юлик! Доступ к фарму открыт 😎🔥";
+                authStatusText.className = "text-[10px] text-green-600 mt-2 font-bold transition-all";
+            } else if (user) {
+                authStatusText.innerText = "Вошел посторонний аккаунт. Доступ закрыт ⛔";
+                authStatusText.className = "text-[10px] text-red-500 mt-2 font-bold transition-all";
             } else {
-                // Если зашел гость - прячем панель и кнопку "Начать"
-                adminPanel.classList.add('hidden');
-                startBtn.classList.add('hidden');
-                // Кнопку логина показываем только если ты еще не вошел
-                loginBtn.classList.remove('hidden');
+                authStatusText.innerText = ""; // Фраза убрана для красоты по твоей просьбе
+                authStatusText.className = "text-[10px] text-pink-400 mt-2 font-bold transition-all";
             }
         });
 
-        // Функция входа через Google Popup
-        loginBtn.addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Ошибка авторизации: ", error);
+        // Функция-защитник: проверяет авторизацию Юлика, а если её нет — логинит и сразу делает то, что ты нажал
+        async function runWithAuth(action) {
+            let user = auth.currentUser;
+            if (!user) {
+                authStatusText.innerText = "Авторизация... Подтверди, что ты Юлик! 🔑";
+                authStatusText.className = "text-[10px] text-amber-500 mt-2 font-bold animate-pulse";
+                try {
+                    const result = await signInWithPopup(auth, provider);
+                    user = result.user;
+                } catch (error) {
+                    console.error("Ошибка авторизации: ", error);
+                    authStatusText.innerText = "Редактировать можно только Юлику! 😎";
+                    authStatusText.className = "text-[10px] text-red-500 mt-2 font-bold";
+                    return;
+                }
             }
-        });
+
+            if (user && user.email === "ulikloctar@gmail.com") {
+                action();
+            } else {
+                authStatusText.innerText = "Ты не Юлик! Редактировать нельзя! 👩🏼😡";
+                authStatusText.className = "text-[10px] text-red-600 mt-2 font-bold";
+            }
+        }
 
         function playMusicSafe() {
             bgMusic.play().then(() => {
@@ -204,12 +220,8 @@
                 currentRate = parseFloat(data.currentRate) || 44.76;
                 rateInput.value = currentRate.toFixed(2);
                 
-                // Кнопку "Начать фарм" показываем только Юлику и только если фарм еще не запущен
-                if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
-                    startBtn.classList.toggle('hidden', !!startDate);
-                } else {
-                    startBtn.classList.add('hidden');
-                }
+                // Кнопка "Начать фарм" видна всем, пока фарм не запущен
+                startBtn.classList.toggle('hidden', !!startDate);
                 
                 updateCounter();
             }
@@ -237,30 +249,39 @@
             document.getElementById('xpPercent').innerText = `${xpPct.toFixed(6)}%`;
         }
 
-        startBtn.addEventListener('click', async () => {
-            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
-                await setDoc(mainDocRef, { startDate: Date.now(), manualSavings, currentRate }, { merge: true });
-            }
+        // Логика запуска фарма
+        const startFarmLogic = async () => {
+            await setDoc(mainDocRef, { startDate: Date.now(), manualSavings, currentRate }, { merge: true });
+        };
+
+        startBtn.addEventListener('click', () => {
+            runWithAuth(startFarmLogic);
         });
 
-        rateInput.addEventListener('input', async () => {
-            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
-                await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
-                updateCounter();
-            }
+        // Логика изменения курса
+        const changeRateLogic = async () => {
+            await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
+            updateCounter();
+        };
+
+        rateInput.addEventListener('change', () => {
+            runWithAuth(changeRateLogic);
         });
 
-        addSavingsBtn.addEventListener('click', async () => {
-            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
-                const amount = parseFloat(document.getElementById('manualInput').value) || 0;
-                if (amount <= 0) return;
-                const currency = document.getElementById('currencySelect').value;
-                const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
-                manualSavings += addedUsd;
-                await setDoc(mainDocRef, { manualSavings }, { merge: true });
-                document.getElementById('manualInput').value = 0;
-                updateCounter();
-            }
+        // Логика добавления вклада
+        const addSavingsLogic = async () => {
+            const amount = parseFloat(document.getElementById('manualInput').value) || 0;
+            if (amount <= 0) return;
+            const currency = document.getElementById('currencySelect').value;
+            const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
+            manualSavings += addedUsd;
+            await setDoc(mainDocRef, { manualSavings }, { merge: true });
+            document.getElementById('manualInput').value = 0;
+            updateCounter();
+        };
+
+        addSavingsBtn.addEventListener('click', () => {
+            runWithAuth(addSavingsLogic);
         });
 
         setInterval(updateCounter, 1000);

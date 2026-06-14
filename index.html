@@ -16,12 +16,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
         }
         .pink-glow { text-shadow: 0 0 10px #f472b6; }
-        /* Эффект матового стекла с 40% прозрачности (60% непрозрачности) */
         .glass-panel {
             background-color: rgba(255, 255, 255, 0.60) !important;
             backdrop-filter: blur(8px);
         }
-        /* Анимация пульсации для глянца полосы опыта */
         @keyframes shine {
             0% { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
@@ -33,19 +31,16 @@
 </head>
 <body class="flex flex-col items-center md:items-end justify-center min-h-screen p-4 md:pr-[10vw]">
     
-    <!-- Аудиоэлемент с резервным источником -->
     <audio id="bgMusic" loop src="https://ulikloctar.github.io/Moya/Taylor Swift - The Fate of Ophelia.mp3"></audio>
 
     <div class="glass-panel p-6 rounded-3xl shadow-2xl border-4 border-pink-500 text-center w-full max-w-md my-4 relative">
         
-        <!-- Кнопочка управления музыкой -->
         <button id="musicToggle" class="absolute top-4 right-4 bg-pink-500/20 hover:bg-pink-500/40 text-pink-700 w-8 h-8 rounded-full flex items-center justify-center transition border border-pink-400/50 shadow-md">
             <span id="musicIcon" class="text-sm">🎵</span>
         </button>
 
         <h1 class="text-2xl font-bold mb-1 pink-glow font-serif">Путь к Мойе 👩🏼💖</h1>
         
-        <!-- Красивая плашка с датой старта -->
         <div class="text-[11px] font-bold text-pink-700 bg-pink-100/80 inline-block px-3 py-1 rounded-full mb-4">
             Накоплено с 14 июня 2026 года 😎
         </div>
@@ -57,20 +52,15 @@
             </div>
         </div>
 
-        <!-- Полоса опыта (Warcraft 3 XP Bar Style) -->
         <div class="mb-4 px-1">
             <div class="flex justify-between text-[10px] font-bold text-pink-700 mb-1">
                 <span>Она уже ищет тебя 🙂💫</span>
                 <span id="xpPercent">0.0000%</span>
             </div>
-            <!-- Рамка полосы в стиле Warcraft 3 -->
             <div class="w-full bg-pink-950/40 rounded-lg h-6 p-[3px] border-2 border-pink-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] overflow-hidden relative">
-                <!-- Заполняющийся бар с сочным градиентом -->
                 <div id="xpBar" class="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 rounded-md transition-all duration-1000 shadow-[0_0_10px_#ec4899] relative overflow-hidden" style="width: 0%">
-                    <!-- Глянцевый анимированный блик -->
                     <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/2 h-full bar-shine"></div>
                 </div>
-                <!-- Верхнее стеклянное наложение для объёма -->
                 <div class="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent h-1/2 pointer-events-none"></div>
             </div>
         </div>
@@ -125,7 +115,7 @@
         const db = getFirestore(app);
 
         const targetDrop = 225000;
-        const barLimit = 250000; // Лимит полоски опыта для 100%
+        const barLimit = 250000;
         const totalDuration = 5 * 365.25 * 24 * 60 * 60 * 1000;
         
         let startDate = null;
@@ -135,10 +125,8 @@
         const rateInput = document.getElementById('rateInput');
         const startBtn = document.getElementById('startBtn');
         const addSavingsBtn = document.getElementById('addSavingsBtn');
-
         const mainDocRef = doc(db, "data", "main");
 
-        // Логика фоновой музыки
         const bgMusic = document.getElementById('bgMusic');
         const musicToggle = document.getElementById('musicToggle');
         const musicIcon = document.getElementById('musicIcon');
@@ -148,31 +136,13 @@
             bgMusic.play().then(() => {
                 musicStarted = true;
                 musicIcon.innerText = '🔊';
-            }).catch((err) => {
-                console.log("Ожидание клика для воспроизведения: ", err);
-            });
+            }).catch((err) => console.log("Музыка ждет клика"));
         }
 
-        // Если Google Диск выдает ошибку загрузки, переключаемся на локальный файл music.mp3
-        bgMusic.addEventListener('error', () => {
-            console.log("Ошибка потока с Диска. Пробуем воспроизвести локальный music.mp3");
-            if (bgMusic.getAttribute('src') !== 'Taylor Swift - The Fate of Ophelia.mp3') {
-                bgMusic.setAttribute('src', 'Taylor Swift - The Fate of Ophelia.mp3');
-                bgMusic.load();
-                if (musicStarted || !bgMusic.paused) {
-                    bgMusic.play().catch(e => console.log("Локальный файл Taylor Swift - The Fate of Ophelia.mp3 не найден"));
-                }
-            }
-        });
-
-        // Запуск музыки при первом клике пользователя по экрану
         document.body.addEventListener('click', () => {
-            if (!musicStarted) {
-                playMusicSafe();
-            }
+            if (!musicStarted) playMusicSafe();
         }, { once: true });
 
-        // Ручное управление кнопкой музыки
         musicToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             if (bgMusic.paused) {
@@ -183,20 +153,14 @@
             }
         });
 
-        // Слушаем изменения в базе в реальном времени
-        onSnapshot(mainDocRef, async (docSnap) => {
+        onSnapshot(mainDocRef, (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 startDate = data.startDate || null;
                 manualSavings = parseFloat(data.manualSavings) || 0;
                 currentRate = parseFloat(data.currentRate) || 44.76;
                 rateInput.value = currentRate.toFixed(2);
-                
-                if (startDate) {
-                    startBtn.classList.add('hidden');
-                } else {
-                    startBtn.classList.remove('hidden');
-                }
+                startBtn.classList.toggle('hidden', !!startDate);
                 updateCounter();
             }
         });
@@ -218,8 +182,6 @@
             const currentSavings = (progress * targetDrop) + manualSavings;
             document.getElementById('counter').innerText = currentSavings.toFixed(2) + ' $';
             document.getElementById('counterUah').innerText = (currentSavings * rate).toFixed(2) + ' ₴';
-
-            // Расчет опыта: теперь 100% равен $250 000
             const xpPct = (currentSavings / barLimit) * 100;
             document.getElementById('xpBar').style.width = `${Math.min(xpPct, 100).toFixed(6)}%`;
             document.getElementById('xpPercent').innerText = `${xpPct.toFixed(6)}%`;
@@ -231,7 +193,6 @@
 
         rateInput.addEventListener('input', async () => {
             await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
-            updateCounter();
         });
 
         addSavingsBtn.addEventListener('click', async () => {
@@ -239,10 +200,8 @@
             if (amount <= 0) return;
             const currency = document.getElementById('currencySelect').value;
             const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
-            manualSavings += addedUsd;
-            await setDoc(mainDocRef, { manualSavings }, { merge: true });
+            await setDoc(mainDocRef, { manualSavings: manualSavings + addedUsd }, { merge: true });
             document.getElementById('manualInput').value = 0;
-            updateCounter();
         });
 
         setInterval(updateCounter, 1000);

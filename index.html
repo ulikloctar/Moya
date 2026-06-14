@@ -81,7 +81,10 @@
 
         <button id="startBtn" class="w-full bg-pink-500 text-white py-3 rounded-xl hover:bg-pink-600 transition mb-4 font-bold shadow-lg shadow-pink-200 hidden">НАЧАТЬ ФАРМ 🚀</button>
 
-        <div class="mt-2 border-t border-pink-100 pt-3">
+        <!-- Кнопка авторизации для тебя -->
+        <button id="loginBtn" class="w-full bg-gradient-to-r from-red-400 to-pink-500 text-white py-2 rounded-xl hover:opacity-90 transition mb-4 font-bold shadow-md hidden">Пришёл Юлик 😎</button>
+
+        <div id="adminPanel" class="mt-2 border-t border-pink-100 pt-3 hidden">
             <label class="block text-xs font-bold mb-1.5">Добавить свои сбережения:</label>
             <div class="flex gap-2 mb-3">
                 <div class="w-20">
@@ -101,16 +104,17 @@
                 </div>
             </div>
             <button id="addSavingsBtn" class="w-full bg-pink-400 text-white py-2 rounded-xl hover:bg-pink-500 transition text-sm font-bold shadow-md">Добавить вклад 💖</button>
-            
-            <div class="text-[11px] text-pink-400 mt-2 font-semibold">
-                Твои личные вклады: <span id="manualTotalUsd">0.00</span> $ (<span id="manualTotalUah">0.00</span> ₴)
-            </div>
+        </div>
+
+        <div class="text-[11px] text-pink-400 mt-2 font-semibold">
+            Твои личные вклады: <span id="manualTotalUsd">0.00</span> $ (<span id="manualTotalUah">0.00</span> ₴)
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyBgrOFMkMZ9aV3Kp5ISSdrvpfwO2NsJJEQ",
@@ -123,6 +127,8 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
         const targetDrop = 225000;
         const barLimit = 250000;
@@ -134,6 +140,8 @@
 
         const rateInput = document.getElementById('rateInput');
         const startBtn = document.getElementById('startBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        const adminPanel = document.getElementById('adminPanel');
         const addSavingsBtn = document.getElementById('addSavingsBtn');
         const mainDocRef = doc(db, "data", "main");
 
@@ -141,6 +149,31 @@
         const musicToggle = document.getElementById('musicToggle');
         const musicIcon = document.getElementById('musicIcon');
         let musicStarted = false;
+
+        // Отслеживаем авторизацию пользователя
+        onAuthStateChanged(auth, (user) => {
+            if (user && user.email === "ulikloctar@gmail.com") {
+                // Если зашел ты - показываем панель управления и прячем кнопку входа
+                adminPanel.classList.remove('hidden');
+                loginBtn.classList.add('hidden');
+                if (!startDate) startBtn.classList.remove('hidden');
+            } else {
+                // Если зашел гость - прячем панель и кнопку "Начать"
+                adminPanel.classList.add('hidden');
+                startBtn.classList.add('hidden');
+                // Кнопку логина показываем только если ты еще не вошел
+                loginBtn.classList.remove('hidden');
+            }
+        });
+
+        // Функция входа через Google Popup
+        loginBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Ошибка авторизации: ", error);
+            }
+        });
 
         function playMusicSafe() {
             bgMusic.play().then(() => {
@@ -170,7 +203,14 @@
                 manualSavings = parseFloat(data.manualSavings) || 0;
                 currentRate = parseFloat(data.currentRate) || 44.76;
                 rateInput.value = currentRate.toFixed(2);
-                startBtn.classList.toggle('hidden', !!startDate);
+                
+                // Кнопку "Начать фарм" показываем только Юлику и только если фарм еще не запущен
+                if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
+                    startBtn.classList.toggle('hidden', !!startDate);
+                } else {
+                    startBtn.classList.add('hidden');
+                }
+                
                 updateCounter();
             }
         });
@@ -198,23 +238,29 @@
         }
 
         startBtn.addEventListener('click', async () => {
-            await setDoc(mainDocRef, { startDate: Date.now(), manualSavings, currentRate }, { merge: true });
+            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
+                await setDoc(mainDocRef, { startDate: Date.now(), manualSavings, currentRate }, { merge: true });
+            }
         });
 
         rateInput.addEventListener('input', async () => {
-            await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
-            updateCounter();
+            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
+                await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
+                updateCounter();
+            }
         });
 
         addSavingsBtn.addEventListener('click', async () => {
-            const amount = parseFloat(document.getElementById('manualInput').value) || 0;
-            if (amount <= 0) return;
-            const currency = document.getElementById('currencySelect').value;
-            const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
-            manualSavings += addedUsd;
-            await setDoc(mainDocRef, { manualSavings }, { merge: true });
-            document.getElementById('manualInput').value = 0;
-            updateCounter();
+            if (auth.currentUser && auth.currentUser.email === "ulikloctar@gmail.com") {
+                const amount = parseFloat(document.getElementById('manualInput').value) || 0;
+                if (amount <= 0) return;
+                const currency = document.getElementById('currencySelect').value;
+                const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
+                manualSavings += addedUsd;
+                await setDoc(mainDocRef, { manualSavings }, { merge: true });
+                document.getElementById('manualInput').value = 0;
+                updateCounter();
+            }
         });
 
         setInterval(updateCounter, 1000);

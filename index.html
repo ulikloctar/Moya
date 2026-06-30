@@ -130,6 +130,9 @@
         </div>
     </div>
 
+    <!-- Слой для эффектов -->
+    <div id="effectsLayer" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -171,6 +174,7 @@
         const bgVideo = document.getElementById('bgVideo');
         const videoToggle = document.getElementById('videoToggle');
         const videoIcon = document.getElementById('videoIcon');
+        const effectsLayer = document.getElementById('effectsLayer');
 
         // Ссылка на видеофайл (ты можешь заменить эту ссылку на любое своё видео!)
         bgVideo.src = "https://assets.mixkit.co/videos/preview/mixkit-beautiful-dreamy-pink-clouds-background-41481-large.mp4";
@@ -306,14 +310,57 @@
             manualSavings += addedUsd;
             await setDoc(mainDocRef, { manualSavings }, { merge: true });
             document.getElementById('manualInput').value = 0;
+            
+            // Запускаем праздничные эффекты! 
+            triggerCelebration();
             updateCounter();
         };
+
+        // Обработка клавиши Enter
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (document.activeElement.id === 'manualInput' || document.activeElement.id === 'rateInput') {
+                    runWithAuth(addSavingsLogic);
+                }
+            }
+        });
 
         addSavingsBtn.addEventListener('click', () => {
             runWithAuth(addSavingsLogic);
         });
 
+        // Праздничные эффекты
+        function triggerCelebration() {
+            // Фейерверки (простые элементы)
+            for(let i=0; i<10; i++) {
+                const firework = document.createElement('div');
+                firework.innerHTML = '✨';
+                firework.className = 'absolute text-2xl animate-ping';
+                firework.style.left = Math.random() * 100 + '%';
+                firework.style.top = Math.random() * 100 + '%';
+                effectsLayer.appendChild(firework);
+                setTimeout(() => firework.remove(), 1000);
+            }
+            
+            // Денежный дождь
+            for(let i=0; i<15; i++) {
+                const money = document.createElement('div');
+                money.innerHTML = Math.random() > 0.5 ? '💵' : '💸';
+                money.className = 'absolute text-xl animate-bounce';
+                money.style.left = Math.random() * 100 + '%';
+                money.style.top = '-50px';
+                money.style.animation = `fall ${1 + Math.random() * 2}s linear forwards`;
+                effectsLayer.appendChild(money);
+                setTimeout(() => money.remove(), 3000);
+            }
+        }
+
         setInterval(updateCounter, 1000);
     </script>
+    <style>
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+    </style>
 </body>
 </html>

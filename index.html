@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Моя Мойя</title>
+    <title>Тёлочка 👩🏼💖</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { 
@@ -59,7 +59,7 @@
 
         <!-- Кнопка перехода на сайт под видео кнопкой -->
         <a href="https://ulikloctar.github.io/Moya/" class="absolute top-16 left-4 bg-pink-500/20 hover:bg-pink-500/40 text-pink-700 w-8 h-8 rounded-full flex items-center justify-center transition border border-pink-400/50 shadow-md" title="Перейти на сайт">
-            <span class="text-sm">🏠</span>
+            <span class="text-sm">👩🏼</span>
         </a>
 
         <!-- Кнопка музыки справа -->
@@ -68,11 +68,11 @@
         </button>
 
         <!-- Кнопка жесткого фейерверка справа (под музыкой) -->
-        <button id="fireworkTrigger" class="absolute top-16 right-4 bg-pink-500/20 hover:bg-pink-500/40 text-pink-700 w-8 h-8 rounded-full flex items-center justify-center transition border border-pink-400/50 shadow-md" title="Запустить непрерывный фейерверк!">
+        <button id="fireworkTrigger" class="absolute top-16 right-4 bg-pink-500/20 hover:bg-pink-500/40 text-pink-700 w-8 h-8 rounded-full flex items-center justify-center transition border border-pink-400/50 shadow-md" title="Запустить непрерывный фейерверк и дождь!">
             <span class="text-sm">🎆</span>
         </button>
 
-        <h1 class="text-2xl font-bold mb-1 pink-glow font-serif">Путь к Мойе 👩🏼💖</h1>
+        <h1 class="text-2xl font-bold mb-1 pink-glow font-serif">U1 PRO тёлочка 👩🏼💖</h1>
         
         <div class="text-[11px] font-bold text-pink-700 bg-pink-100/80 inline-block px-3 py-1 rounded-full mb-4">
             Накоплено с 14 июня 2026 года 😎
@@ -100,7 +100,7 @@
         </div>
         
         <div id="message" class="text-sm italic text-pink-500 mb-4 h-12 flex items-center justify-center font-bold px-2">
-            Юлик, скоро ты трахнешь свою сучку 🍌🍓💞✨
+            Юлик, скоро ты трахнешь свою сучку 🍌🍓🍑💞✨
         </div>
 
         <!-- Кнопка "Начать фарм" видна всем, но запустить сможет только Юлик -->
@@ -232,12 +232,10 @@
 
         function toggleMusicState() {
             if (bgMusic.paused) {
-                // play() автоматически продолжает воспроизведение с момента паузы
                 bgMusic.play().then(() => {
                     musicIcon.innerText = '🔊';
                 }).catch((err) => console.log("Музыка не смогла запуститься:", err));
             } else {
-                // pause() просто останавливает песню на текущей секунде
                 bgMusic.pause();
                 musicIcon.innerText = '🔇';
             }
@@ -311,45 +309,28 @@
             runWithAuth(startFarmLogic);
         });
 
-        // Логика изменения курса
-        const changeRateLogic = async () => {
-            await setDoc(mainDocRef, { currentRate: parseFloat(rateInput.value) }, { merge: true });
-            updateCounter();
-        };
-
-        rateInput.addEventListener('change', () => {
-            runWithAuth(changeRateLogic);
-        });
-
         // Логика добавления вклада
         const addSavingsLogic = async () => {
-            const amount = parseFloat(document.getElementById('manualInput').value) || 0;
-            if (amount <= 0) return;
-            const currency = document.getElementById('currencySelect').value;
-            const addedUsd = currency === 'UAH' ? amount / (parseFloat(rateInput.value) || 44.76) : amount;
-            manualSavings += addedUsd;
-            await setDoc(mainDocRef, { manualSavings }, { merge: true });
-            document.getElementById('manualInput').value = 0;
-            
-            // Включаем полноценный режим праздника при вкладе!
-            startPartyCelebration();
-            updateCounter();
-        };
+            const val = parseFloat(document.getElementById('manualInput').value) || 0;
+            if (val <= 0) return;
 
-        // Обработка клавиши Enter на полях ввода
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                if (document.activeElement.id === 'manualInput' || document.activeElement.id === 'rateInput') {
-                    runWithAuth(addSavingsLogic);
-                }
-            }
-        });
+            const rate = parseFloat(rateInput.value) || 44.76;
+            const currency = document.getElementById('currencySelect').value;
+            const usdToAdd = currency === 'USD' ? val : val / rate;
+
+            const newSavings = manualSavings + usdToAdd;
+            await setDoc(mainDocRef, { manualSavings: newSavings, currentRate: rate }, { merge: true });
+            document.getElementById('manualInput').value = "0";
+
+            // Праздничный 10-секундный взрыв при вкладе!
+            startPartyCelebration(false);
+        };
 
         addSavingsBtn.addEventListener('click', () => {
             runWithAuth(addSavingsLogic);
         });
 
-        // Инициализация Canvas и контекста
+        // Сверхвысокопроизводительный холст для анимации фейерверков и дождя из денег
         const canvas = document.getElementById('effectsCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -380,7 +361,7 @@
             { r: 34, g: 211, b: 238 }    // Неоновый бирюзовый
         ];
 
-        // Вращающиеся и летящие по синусоиде элементы (Монеты, доллары, эмодзи)
+        // Вращающиеся и летящие по синусоиде элементы (Монеты, доллары, тематические эмодзи)
         class MoneyItem {
             constructor() {
                 this.x = Math.random() * canvas.width;
@@ -390,18 +371,20 @@
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.04;
                 
-                // Делим на 3 категории: 'coin' (40%), 'dollar' (40%), 'emoji' (20%)
+                // Единый базовый размер для идеальной пропорции и соответствия самой крупной банкноте
+                const baseSize = 24;
+                this.scale = baseSize;
+
+                // Распределение: 30% монетки, 30% банкноты, 40% сочные эмодзи
                 const randType = Math.random();
-                if (randType < 0.4) {
+                if (randType < 0.3) {
                     this.type = 'coin';
-                    this.scale = 12 + Math.random() * 8; // радиус
-                } else if (randType < 0.8) {
+                } else if (randType < 0.6) {
                     this.type = 'dollar';
-                    this.scale = 18 + Math.random() * 10; // ширина банкноты
                 } else {
                     this.type = 'emoji';
-                    this.emoji = ['💖', '✨', '💎', '🍓', '🍌'][Math.floor(Math.random() * 5)];
-                    this.scale = 16 + Math.random() * 12;
+                    const emojiSubtypes = ['vagina', 'girl', 'heart', 'tits', 'penis', 'sparkles', 'diamond', 'peach'];
+                    this.emojiSubtype = emojiSubtypes[Math.floor(Math.random() * emojiSubtypes.length)];
                 }
                 
                 this.swingSpeed = 0.025 + Math.random() * 0.035;
@@ -422,26 +405,26 @@
                 ctx.rotate(this.rotation);
 
                 if (this.type === 'coin') {
-                    // Рисуем красивую мультяшную золотую монетку
-                    const r = this.scale;
+                    // Рисуем красивую мультяшную золотую монетку. Увеличенная на 30%
+                    const r = this.scale * 0.45 * 1.30;
                     
                     // Темно-золотая обводка для мультяшности
                     ctx.beginPath();
                     ctx.arc(0, 0, r, 0, Math.PI * 2);
-                    ctx.fillStyle = '#b45309'; // Темная бронза/золото
+                    ctx.fillStyle = '#b45309'; 
                     ctx.fill();
                     
                     // Основное золотое тело монеты
                     ctx.beginPath();
                     ctx.arc(0, 0, r * 0.85, 0, Math.PI * 2);
-                    ctx.fillStyle = '#fbbf24'; // Ярко-желтое золото
+                    ctx.fillStyle = '#fbbf24'; 
                     ctx.fill();
 
                     // Внутренний ободок
                     ctx.beginPath();
                     ctx.arc(0, 0, r * 0.65, 0, Math.PI * 2);
                     ctx.strokeStyle = '#f59e0b';
-                    ctx.lineWidth = 1.5;
+                    ctx.lineWidth = 1.5 * 1.30;
                     ctx.stroke();
 
                     // Блик света (эффект глянца)
@@ -490,7 +473,7 @@
                     // Кружок в центре банкноты
                     ctx.beginPath();
                     ctx.ellipse(0, 0, w * 0.22, h * 0.32, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ecfdf5'; // Очень светлый мятный
+                    ctx.fillStyle = '#ecfdf5'; 
                     ctx.fill();
                     ctx.strokeStyle = '#047857';
                     ctx.stroke();
@@ -502,18 +485,59 @@
                     ctx.textBaseline = 'middle';
                     ctx.fillText('$', 0, 0);
 
-                    // Циферки "1" или значки по углам
+                    // Циферки "1" по углам
                     ctx.font = `bold ${h * 0.25}px Arial`;
                     ctx.fillStyle = '#047857';
                     ctx.fillText('$', -w/2 + 8, -h/2 + 9);
                     ctx.fillText('$', w/2 - 8, h/2 - 9);
 
                 } else {
-                    // Обычный праздничный эмодзи
-                    ctx.font = `${this.scale}px Arial`;
+                    // Отрисовка сочных тем для Юлика
+                    const S = this.scale;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText(this.emoji, 0, 0);
+
+                    if (this.emojiSubtype === 'tits') {
+                        // Сиськи: увеличены на 10% от предыдущего сочного размера (было S * 0.75, стало S * 0.825)
+                        const titSize = S * 0.825;
+                        ctx.font = `${titSize}px Arial`;
+                        ctx.fillText('🍊', -titSize * 0.45, 0);
+                        ctx.fillText('🍊', titSize * 0.45, 0);
+                    } else if (this.emojiSubtype === 'penis') {
+                        // Член: уменьшен на 10% от предыдущей величины (было S * 1.3, стало S * 1.17)
+                        const memberScale = S * 1.17;
+                        ctx.font = `${memberScale}px Arial`;
+                        ctx.fillText('🍌', 0, 0);
+
+                        // Яйца: уменьшены на 20% от предыдущих (было memberScale * 0.5, стало memberScale * 0.4)
+                        const eggSize = memberScale * 0.4;
+                        ctx.font = `${eggSize}px Arial`;
+                        // Расположены аккуратно слева у основания банана
+                        ctx.fillText('🍊', -memberScale * 0.45, -memberScale * 0.15);
+                        ctx.fillText('🍊', -memberScale * 0.45, memberScale * 0.15);
+                    } else if (this.emojiSubtype === 'vagina') {
+                        // Клубника пизда
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('🍓', 0, 0);
+                    } else if (this.emojiSubtype === 'girl') {
+                        // Блондинка тёлочка 👩🏼
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('👩🏼', 0, 0);
+                    } else if (this.emojiSubtype === 'heart') {
+                        // Сердечки
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('💖', 0, 0);
+                    } else if (this.emojiSubtype === 'sparkles') {
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('✨', 0, 0);
+                    } else if (this.emojiSubtype === 'diamond') {
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('💎', 0, 0);
+                    } else if (this.emojiSubtype === 'peach') {
+                        // Персик - попка 🍑
+                        ctx.font = `${S}px Arial`;
+                        ctx.fillText('🍑', 0, 0);
+                    }
                 }
 
                 ctx.restore();
@@ -532,7 +556,7 @@
                 this.vx = Math.cos(angle) * this.speed;
                 this.vy = Math.sin(angle) * this.speed;
                 this.trail = [];
-                this.trailMaxLength = 15;
+                this.trailMaxLength = 25; // Сделали след длиннее и выразительнее
             }
 
             update() {
@@ -544,24 +568,25 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Добавление легких искр в след полета
-                if (Math.random() < 0.4) {
+                // Добавление более плотных и крупных искр в след полета ракеты
+                if (Math.random() < 0.65) {
                     particles.push(new Particle(
                         this.x, 
                         this.y, 
-                        (Math.random() - 0.5) * 1.5, 
-                        (Math.random() - 0.5) * 1.5 + 1.5, 
-                        { r: 253, g: 224, b: 71 }, // Золотые искры
-                        0.7, 
-                        0.03
+                        (Math.random() - 0.5) * 2.0, 
+                        (Math.random() - 0.5) * 2.0 + 2.0, 
+                        { r: 253, g: 224, b: 71 }, // Золотые сверкающие искры
+                        0.8, 
+                        0.02,
+                        3.5 // Крупные искры
                     ));
                 }
             }
 
             draw() {
                 ctx.beginPath();
-                ctx.strokeStyle = 'rgba(255, 244, 200, 0.9)';
-                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgba(255, 244, 200, 0.95)';
+                ctx.lineWidth = 5.5; // Сделали линию ракеты насыщенной и жирной
                 ctx.lineCap = 'round';
                 for (let i = 0; i < this.trail.length; i++) {
                     const point = this.trail[i];
@@ -590,7 +615,7 @@
                 this.decay = decay;
                 this.gravity = 0.055;
                 this.friction = 0.975;
-                this.size = size + Math.random() * 1.5;
+                this.size = size + Math.random() * 2.0;
             }
 
             update() {
@@ -620,17 +645,17 @@
             const isHeart = Math.random() < 0.35; // 35% шанс взрыва в форме сердечка 💖
 
             if (isHeart) {
-                // Взрыв в форме СЕРДЦА
+                // Взрыв в форме СЕРДЦА - ТЕПЕРЬ СВЕРХНАСЫЩЕННЫЙ
                 const heartColor = { r: 244, g: 63, b: 94 }; // Изумительный Rose-цвет
-                const particlesCount = 90;
+                const particlesCount = 160; // Намного больше плотности!
                 for (let i = 0; i < particlesCount; i++) {
                     const angle = (i / particlesCount) * Math.PI * 2;
                     // Математическая формула сердца
                     const px = 16 * Math.pow(Math.sin(angle), 3);
                     const py = -(13 * Math.cos(angle) - 5 * Math.cos(2*angle) - 2 * Math.cos(3*angle) - Math.cos(4*angle));
                     
-                    const multiplier = 0.28 + Math.random() * 0.08;
-                    const decay = 0.008 + Math.random() * 0.006;
+                    const multiplier = 0.32 + Math.random() * 0.10; // Мощный выброс
+                    const decay = 0.006 + Math.random() * 0.005; // Живут гораздо дольше!
                     particles.push(new Particle(
                         x, 
                         y, 
@@ -639,17 +664,17 @@
                         heartColor, 
                         1, 
                         decay, 
-                        2.8
+                        4.2 // Крупные сверкающие точки
                     ));
                 }
             } else {
-                // Мощный круговой неоновый взрыв
+                // Мощный круговой неоновый взрыв - ТЕПЕРЬ НАМНОГО ПЛОТНЕЕ
                 const color = neonColors[Math.floor(Math.random() * neonColors.length)];
-                const particlesCount = 80 + Math.floor(Math.random() * 50);
+                const particlesCount = 150 + Math.floor(Math.random() * 70); // Огромное количество искр
                 for (let i = 0; i < particlesCount; i++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const speed = 1.5 + Math.random() * 8.5;
-                    const decay = 0.01 + Math.random() * 0.015;
+                    const speed = 1.5 + Math.random() * 9.5; // Разлетаются быстрее
+                    const decay = 0.007 + Math.random() * 0.013; // Плавное приятное угасание
                     particles.push(new Particle(
                         x, 
                         y, 
@@ -658,7 +683,7 @@
                         color, 
                         1, 
                         decay, 
-                        2
+                        3.5 // Крупные искры
                     ));
                 }
             }
@@ -682,31 +707,6 @@
             setTimeout(spawnContinuousRocket, nextDelay);
         }
 
-        // Запуск режима непрерывного фейерверка
-        function startContinuousFireworks() {
-            if (continuousFireworks) return; // уже запущено
-            continuousFireworks = true;
-            spawnContinuousRocket();
-            updateFireworkButtonUI();
-        }
-
-        // Остановка фейерверка
-        function stopContinuousFireworks() {
-            continuousFireworks = false;
-            updateFireworkButtonUI();
-        }
-
-        // Логика 10-секундного дождя из эмодзи, монет и долларов
-        function startEmojiRain10s() {
-            emojiRainActive = true;
-            spawnEmojiLoop();
-
-            if (emojiRainTimeout) clearTimeout(emojiRainTimeout);
-            emojiRainTimeout = setTimeout(() => {
-                emojiRainActive = false;
-            }, 10000); // Ровно 10 секунд!
-        }
-
         // Запуск цикла генерации падающего добра
         function spawnEmojiLoop() {
             if (!emojiRainActive) return;
@@ -719,7 +719,7 @@
 
         // Функция обновления внешнего вида кнопки фейерверка
         function updateFireworkButtonUI() {
-            if (continuousFireworks) {
+            if (continuousFireworks || emojiRainActive) {
                 fireworkTrigger.classList.add('bg-pink-500', 'text-white', 'scale-110', 'animate-pulse');
                 fireworkTrigger.classList.remove('bg-pink-500/20', 'text-pink-700');
             } else {
@@ -728,23 +728,55 @@
             }
         }
 
-        // Запуск полного режима Праздника
-        function startPartyCelebration() {
-            // 1. Активируем музыку (продолжит с места паузы!)
+        // Запуск полного режима Праздника (бесконечного или временного на 10 сек)
+        function startPartyCelebration(infinite = false) {
             forcePlayMusic();
-            // 2. Включаем бесконечный фейерверк
-            startContinuousFireworks();
-            // 3. Запускаем дождь из денег и эмодзи на 10 секунд
-            startEmojiRain10s();
+            
+            if (!continuousFireworks) {
+                continuousFireworks = true;
+                spawnContinuousRocket();
+            }
+            
+            if (!emojiRainActive) {
+                emojiRainActive = true;
+                spawnEmojiLoop();
+            }
+            
+            updateFireworkButtonUI();
+
+            if (!infinite) {
+                // Если это временный праздник (например, при внесении вклада) - выключаем его через 10 секунд
+                if (emojiRainTimeout) clearTimeout(emojiRainTimeout);
+                emojiRainTimeout = setTimeout(() => {
+                    stopPartyCelebration();
+                }, 10000);
+            } else {
+                // Если включен бесконечный ручной режим, сбрасываем таймер выключения
+                if (emojiRainTimeout) {
+                    clearTimeout(emojiRainTimeout);
+                    emojiRainTimeout = null;
+                }
+            }
         }
 
-        // Обработка клика по кнопке фейерверка
+        // Полная остановка праздника (и дождя, и фейерверков)
+        function stopPartyCelebration() {
+            continuousFireworks = false;
+            emojiRainActive = false;
+            if (emojiRainTimeout) {
+                clearTimeout(emojiRainTimeout);
+                emojiRainTimeout = null;
+            }
+            updateFireworkButtonUI();
+        }
+
+        // Обработка клика по кнопке фейерверка (переключатель бесконечного режима)
         fireworkTrigger.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (continuousFireworks) {
-                stopContinuousFireworks();
+            if (continuousFireworks || emojiRainActive) {
+                stopPartyCelebration();
             } else {
-                startPartyCelebration();
+                startPartyCelebration(true); // Запускаем бесконечную красоту!
             }
         });
 
